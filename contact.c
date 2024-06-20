@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #define MAX_CONTACTS 1000
 #define MAX_NAME_LEN 50
@@ -170,6 +173,9 @@ void update_contacts_from_file() {
 }
 
 int main() {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
     int choice;
     while (1) {
         display_main_menu();
@@ -205,4 +211,3 @@ int main() {
     }
     return 0;
 }
-
