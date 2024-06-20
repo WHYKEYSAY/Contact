@@ -147,30 +147,38 @@ void search_contact() {
     getchar();
 }
 
-void update_contacts_from_file() {
-    char filename[MAX_NAME_LEN];
-    printf("请上传文件: ");
-    scanf("%49s", filename);
-    getchar(); // Consume newline character
+void update_contact() {
+    char name[MAX_NAME_LEN];
+    printf("请输入要更新的联系人名字: ");
+    fgets(name, MAX_NAME_LEN, stdin);  // Use fgets instead of scanf to read the whole line
+    name[strcspn(name, "\n")] = '\0';  // Remove the newline character at the end
 
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("文件上传失败。\n");
-        printf("按'q'回到主界面\n");
-        getchar();
-        return;
+    int found = 0;
+    for (int i = 0; i < contact_count; i++) {
+        if (strcmp(contacts[i].name, name) == 0) {
+            printf("新电话号码: ");
+            fgets(contacts[i].phone, MAX_PHONE_LEN, stdin);
+            contacts[i].phone[strcspn(contacts[i].phone, "\n")] = '\0';  // Remove the newline character
+
+            printf("新地址: ");
+            fgets(contacts[i].address, MAX_ADDR_LEN, stdin);
+            contacts[i].address[strcspn(contacts[i].address, "\n")] = '\0';  // Remove the newline character
+
+            printf("\n更新后的联系人信息：\n");
+            printf("名字: %s 电话: %s 地址: %s\n", contacts[i].name, contacts[i].phone, contacts[i].address);
+            found = 1;
+            break;
+        }
     }
 
-    while (fscanf(file, "%49[^,],%19[^,],%99[^\n]\n", contacts[contact_count].name, contacts[contact_count].phone, contacts[contact_count].address) != EOF) {
-        contact_count++;
-        if (contact_count >= MAX_CONTACTS) break;
+    if (!found) {
+        printf("未找到联系人\n");
     }
-    fclose(file);
 
-    printf("上传成功! 联系人列表已更新。\n");
     printf("按'q'回到主界面\n");
     getchar();
 }
+
 
 int main() {
 #ifdef _WIN32
