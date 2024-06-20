@@ -20,26 +20,25 @@ typedef struct {
 } Contact;
 
 Contact contacts[MAX_CONTACTS];
-int contact_count = 0;  // 当前联系人数量
+int contact_count = 0;
 
-// 清空输入缓冲区
 void clear_input_buffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-// 检查文件是否为CSV格式
-int is_csv_file(const char *filename) {
+// 检查文件是否为CSV或TXT格式
+int is_csv_or_txt_file(const char *filename) {
     const char *extension = strrchr(filename, '.');
     if (extension == NULL) {
         return 0;  // 没有找到文件扩展名
     }
-    return strcasecmp(extension, ".csv") == 0;
+    return strcasecmp(extension, ".csv") == 0 || strcasecmp(extension, ".txt") == 0;
 }
 
 // 根据名字查找联系人
 Contact *find_contact_by_name(const char *name) {
-    // 去除名字中的前后空白字符
+    // 去除名字中的前后空白
     char trimmed_name[MAX_NAME_LEN];
     int j = 0;
     for (int i = 0; name[i] != '\0'; i++) {
@@ -49,15 +48,16 @@ Contact *find_contact_by_name(const char *name) {
     }
     trimmed_name[j] = '\0';
 
+    // 遍历联系人数组查找匹配的名字
     for (int i = 0; i < contact_count; i++) {
         if (strcasecmp(contacts[i].name, trimmed_name) == 0) {
             return &contacts[i];
         }
     }
-    return NULL;
+    return NULL;  // 没找到返回NULL
 }
 
-// 显示单个联系人的信息
+// 显示单个联系人信息
 void display_contact(const Contact *contact) {
     printf("名字: %s 电话: %s 地址: %s\n", contact->name, contact->phone, contact->address);
 }
@@ -238,8 +238,8 @@ void update_contacts_from_file() {
     scanf("%49s", filename);
     clear_input_buffer();
 
-    if (!is_csv_file(filename)) {
-        printf("对不起，目前仅支持 .csv 文件，请重新上传。\n");
+    if (!is_csv_or_txt_file(filename)) {
+        printf("对不起，目前仅支持 .csv 或 .txt 文件，请重新上传。\n");
         printf("按任意键回到主界面\n");
         clear_input_buffer();
         getchar();
@@ -268,21 +268,24 @@ void update_contacts_from_file() {
         char *address = strtok(NULL, "\n");
 
         if (name && phone && address) {
-            // 去除字段中的前后空白
-            // 去除名字中的前后空白
-            while (isspace((unsigned char)*name)) name++;
-            char *end = name + strlen(name) - 1;
-            while (end > name && isspace((unsigned char)*end)) end--;
-            end[1] = '\0';
+            // 去除名字和地址中的前后空白
+            char trimmed_name[MAX_NAME_LEN];
+            int j = 0;
+            for (int i = 0; name[i] != '\0'; i++) {
+                if (!isspace((unsigned char) name[i])) {
+                    trimmed_name[j++] = name[i];
+                }
+            }
+            trimmed_name[j] = '\0';
 
-            Contact *existing_contact = find_contact_by_name(name);
+            Contact *existing_contact = find_contact_by_name(trimmed_name);
             if (existing_contact != NULL) {
                 strncpy(existing_contact->phone, phone, MAX_PHONE_LEN - 1);
                 existing_contact->phone[MAX_PHONE_LEN - 1] = '\0';
                 strncpy(existing_contact->address, address, MAX_ADDR_LEN - 1);
                 existing_contact->address[MAX_ADDR_LEN - 1] = '\0';
             } else if (contact_count < MAX_CONTACTS) {
-                strncpy(contacts[contact_count].name, name, MAX_NAME_LEN - 1);
+                strncpy(contacts[contact_count].name, trimmed_name, MAX_NAME_LEN - 1);
                 contacts[contact_count].name[MAX_NAME_LEN - 1] = '\0';
                 strncpy(contacts[contact_count].phone, phone, MAX_PHONE_LEN - 1);
                 contacts[contact_count].phone[MAX_PHONE_LEN - 1] = '\0';
@@ -368,7 +371,7 @@ void load_contacts_from_file() {
 // 主函数
 int main() {
 #ifdef _WIN32
-    SetConsoleOutputCP(CP_UTF8);  // 设置输出为UTF-8（Windows特有）
+    SetConsoleOutputCP(CP_UTF8);
 #endif
 
     int choice;
