@@ -314,6 +314,8 @@ void save_contacts_to_file() {
     }
 
     fclose(file);
+    printf("联系人数据保存成功到文件 %s。\n", CONTACTS_FILE);
+
 }
 
 // 从文件加载联系人
@@ -377,6 +379,7 @@ int main() {
                 break;
             case 7:
                 save_contacts_to_file(); // 保存联系人到文件
+                printf("联系人数据已保存，系统将退出。\n");
                 exit(0); // 退出系统
                 break;
             default:
