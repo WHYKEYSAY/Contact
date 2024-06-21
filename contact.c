@@ -29,14 +29,15 @@ void clear_input_buffer() {
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-// 判断文件是否为CSV文件
-int is_csv_file(const char *filename) {
+// 判断文件是否为CSV或TXT文件
+int is_supported_file(const char *filename) {
     const char *extension = strrchr(filename, '.'); // 获取文件扩展名
     if (extension == NULL) {
         return 0; // 没有找到扩展名
     }
-    return strcasecmp(extension, ".csv") == 0; // 比较扩展名是否为.csv（忽略大小写）
+    return (strcasecmp(extension, ".csv") == 0 || strcasecmp(extension, ".txt") == 0); // 比较扩展名是否为.csv或.txt（忽略大小写）
 }
+
 
 // 根据名字查找联系人
 Contact *find_contact_by_name(const char *name) {
@@ -240,8 +241,8 @@ void update_contacts_from_file() {
     scanf("%49s", filename); // 输入文件名
     clear_input_buffer();
 
-    if (!is_csv_file(filename)) {
-        printf("对不起，目前仅支持 .csv 文件，请重新上传。\n");
+    if (!is_supported_file(filename)) {
+        printf("对不起，目前仅支持 .csv 或 .txt 文件，请重新上传。\n");
         printf("按任意键回到主界面\n");
         clear_input_buffer();
         getchar();
@@ -260,7 +261,7 @@ void update_contacts_from_file() {
     char line[256];
     int first_line = 1; // 标记跳过第一行（头部）
     while (fgets(line, sizeof(line), file)) {
-        if (first_line) {
+        if (first_line && strcasecmp(strrchr(filename, '.'), ".csv") == 0) {
             first_line = 0;
             continue; // 跳过头部行
         }
@@ -300,6 +301,7 @@ void update_contacts_from_file() {
     clear_input_buffer();
     getchar();
 }
+
 
 // 保存联系人到文件
 void save_contacts_to_file() {
